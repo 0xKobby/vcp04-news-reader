@@ -202,9 +202,9 @@ body {
 .content-area {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
   background: linear-gradient(160deg, var(--bg) 0%, #252525 100%);
   min-height: calc(100vh - var(--header-h));
   overflow-y: auto;
@@ -215,27 +215,29 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.25rem;
+  gap: 0;               /* pager sits flush below card */
   width: 100%;
-  max-width: 800px;
+  flex: 1;              /* stretch to fill the content area height */
 }
 
 /* ── Featured article card ──────────────────────────────────────────────────── */
 .card {
   width: 100%;
-  border-radius: var(--radius);
+  border-radius: 0;     /* flush to edges — no rounded corners at full width */
   overflow: hidden;
   box-shadow: var(--shadow);
   background: var(--panel);
-  border: 1px solid var(--border);
+  border: none;         /* no border needed when edge-to-edge */
+  flex: 1;              /* grow to fill remaining height above the pager */
 }
 .featured-card { cursor: default; }
 
 .card-image-wrap {
   position: relative;
   width: 100%;
-  /* Responsive height — fills viewport vertically after header + pager space */
-  height: clamp(400px, calc(100vh - var(--header-h) - 160px), 680px);
+  /* Fill the full height of the card, which itself fills the viewport */
+  height: 100%;
+  min-height: calc(100vh - var(--header-h) - 72px); /* 72px = pager row */
   overflow: hidden;
 }
 .card-image {
@@ -346,7 +348,13 @@ body {
 .pager {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
+  width: 100%;
+  height: 72px;         /* matches the offset used in card-image-wrap min-height */
+  background: var(--bg-deep);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;       /* never compress — always full 72px */
 }
 .pager-btn {
   width: 38px;
@@ -532,13 +540,14 @@ body {
   .sidebar.open { display: flex; }
 
   .content-area {
-    padding: 1rem;
-    min-height: calc(100vh - var(--header-h) - 2rem);
+    padding: 0;
+    min-height: calc(100vh - var(--header-h));
   }
 
   .card-image-wrap {
-    /* On mobile let the card expand naturally to fill available height */
-    height: clamp(320px, 60vh, 520px);
+    /* On mobile, fill viewport minus header and pager */
+    min-height: calc(100vh - var(--header-h) - 72px);
+    height: 100%;
   }
 
   .card-overlay { padding: 1.1rem; }
