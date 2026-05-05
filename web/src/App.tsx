@@ -213,20 +213,45 @@ export default function App() {
   // ── Favorites toggle ──────────────────────────────────────────────────────
 
   const handleToggleFavorite = useCallback((article: Article) => {
-    // Store the full article so we can render it in the favorites view
-    favArticleStore.current.set(article.uuid, article);
-
     setFavorites((prev) => {
       const next = new Set(prev);
       if (next.has(article.uuid)) {
+        // Removing — delete from both the UUID set and the article store.
+        // Not cleaning up favArticleStore here was the root cause of the
+        // stale-count bug: the store kept the article object, so the UUID
+        // in localStorage could never be reconciled to 0 on next load.
         next.delete(article.uuid);
+        favArticleStore.current.delete(article.uuid);
       } else {
+        // Adding — store the full Article object so the favorites sidebar
+        // can render it even after the page cache has been cleared.
         next.add(article.uuid);
+        favArticleStore.current.set(article.uuid, article);
       }
       saveFavorites(next);
       return next;
     });
   }, []);
+
+  // ── Purge stale localStorage UUIDs on mount ──────────────────────────────
+  // If a UUID was saved to localStorage in a previous session but the
+  // corresponding Article object is no longer in the in-memory store
+  // (because the app restarted and that article was never re-fetched),
+  // the count badge would show a non-zero number with nothing to display.
+  // This effect runs once on mount and prunes any such orphaned UUIDs.
+  useEffect(() => {
+    setFavorites((prev) => {
+      const stale = [...prev].filter(
+        (uuid) => !favArticleStore.current.has(uuid)
+      );
+      if (stale.length === 0) return prev; // nothing to do — bail out early
+      const next = new Set(prev);
+      stale.forEach((uuid) => next.delete(uuid));
+      saveFavorites(next);
+      return next;
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
 
   // ── Search submit ─────────────────────────────────────────────────────────
 
@@ -241,6 +266,8 @@ export default function App() {
   };
 
   // ── Derived data for favorites view ───────────────────────────────────────
+  // Map UUIDs → full Article objects. Any UUID without a stored Article is
+  // filtered out — this handles stale UUIDs from localStorage gracefully.
   const favoriteArticles = [...favorites]
     .map((uuid) => favArticleStore.current.get(uuid))
     .filter(Boolean) as Article[];
