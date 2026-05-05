@@ -94,7 +94,10 @@ body {
 .app-body {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  /* Lock the row to exactly the viewport minus the header.
+     Both the sidebar and the card column must stay within this box. */
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;        /* nothing escapes this boundary */
 }
 
 /* ── Sidebar ────────────────────────────────────────────────────────────────── */
@@ -206,8 +209,10 @@ body {
   align-items: stretch;
   padding: 0;
   background: linear-gradient(160deg, var(--bg) 0%, #252525 100%);
-  min-height: calc(100vh - var(--header-h));
-  overflow-y: auto;
+  /* Must match sidebar height exactly — use height not min-height so the
+     column cannot grow taller than the sidebar. */
+  height: calc(100vh - var(--header-h));
+  overflow: hidden;        /* card fills this space; it does not scroll out */
 }
 
 /* ── Card wrapper ───────────────────────────────────────────────────────────── */
@@ -235,9 +240,9 @@ body {
 .card-image-wrap {
   position: relative;
   width: 100%;
-  /* Fill the full height of the card, which itself fills the viewport */
+  /* Simply fill the card's height — the card already fills the flex column,
+     which is already capped at sidebar height. No min-height needed. */
   height: 100%;
-  min-height: calc(100vh - var(--header-h) - 72px); /* 72px = pager row */
   overflow: hidden;
 }
 .card-image {
@@ -541,13 +546,17 @@ body {
 
   .content-area {
     padding: 0;
-    min-height: calc(100vh - var(--header-h));
+    /* On mobile the sidebar stacks above, so allow the content area to
+       fill whatever vertical space remains rather than a fixed height. */
+    height: auto;
+    min-height: 0;
+    overflow: visible;
   }
 
   .card-image-wrap {
-    /* On mobile, fill viewport minus header and pager */
-    min-height: calc(100vh - var(--header-h) - 72px);
-    height: 100%;
+    /* On mobile, fill a comfortable viewport fraction */
+    height: calc(100vh - var(--header-h) - 72px);
+    min-height: 320px;
   }
 
   .card-overlay { padding: 1.1rem; }
