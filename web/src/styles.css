@@ -219,10 +219,11 @@ body {
 .card-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0;               /* pager sits flush below card */
+  align-items: stretch;  /* children fill full width */
   width: 100%;
-  flex: 1;              /* stretch to fill the content area height */
+  flex: 1;               /* fill the content-area column */
+  overflow: hidden;      /* hard ceiling — nothing escapes */
+  min-height: 0;         /* critical: lets flex children shrink below content size */
 }
 
 /* ── Featured article card ──────────────────────────────────────────────────── */
@@ -232,8 +233,9 @@ body {
   overflow: hidden;
   box-shadow: var(--shadow);
   background: var(--panel);
-  border: none;         /* no border needed when edge-to-edge */
-  flex: 1;              /* grow to fill remaining height above the pager */
+  border: none;
+  flex: 1;              /* take all space that the pager doesn't need */
+  min-height: 0;        /* allow the card to shrink so pager is never pushed out */
 }
 .featured-card { cursor: default; }
 
