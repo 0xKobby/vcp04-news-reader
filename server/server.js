@@ -44,8 +44,9 @@ app.get("/api/news/all", async (req, res) => {
   // Guard: fail loudly if the dev forgot to set the token
   if (!token || token === "your_api_token_here") {
     return res.status(500).json({
-      error: "Server misconfiguration: THENEWSAPI_TOKEN is not set. " +
-             "Copy server/.env.example to server/.env and add your token.",
+      error:
+        "Server misconfiguration: THENEWSAPI_TOKEN is not set. " +
+        "Copy server/.env.example to server/.env and add your token.",
     });
   }
 
@@ -59,9 +60,20 @@ app.get("/api/news/all", async (req, res) => {
   }
 
   // Enforce fixed params — client cannot override these
-  upstream.searchParams.set("api_token", token);   // secret — server-side only
-  upstream.searchParams.set("language", "en");     // always English
-  upstream.searchParams.set("limit", "3");         // 3 results per page
+  upstream.searchParams.set("api_token", token); // secret — server-side only
+  upstream.searchParams.set("language", "en"); // always English
+  upstream.searchParams.set("limit", "3"); // 3 results per page
+
+  // Per the API docs, when a search param is present the default sort order
+  // switches from published_at to relevance_score, which surfaces older but
+  // more "relevant" articles. We always want the freshest results, so force
+  // sort=published_at whenever a search term is active.
+  if (
+    upstream.searchParams.has("search") &&
+    upstream.searchParams.get("search") !== ""
+  ) {
+    upstream.searchParams.set("sort", "published_at");
+  }
 
   // Log the URL without the token so devs can debug routing issues safely.
   const debugUrl = new URL(upstream.toString());
