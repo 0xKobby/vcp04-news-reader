@@ -1,18 +1,13 @@
 {
-  "comment": "Vercel project configuration for news-reader.",
-
   "buildCommand": "cd web && npm install && npm run build",
   "outputDirectory": "web/dist",
   "installCommand": "echo 'skip root install'",
-
   "rewrites": [
     {
-      "comment": "Route all /api/* requests to the serverless functions in /api/",
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
     {
-      "comment": "SPA fallback — send all other requests to index.html so React Router works",
       "source": "/(.*)",
       "destination": "/index.html"
     }
